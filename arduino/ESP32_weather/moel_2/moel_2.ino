@@ -1,11 +1,11 @@
 #include <EloquentTinyML.h>
 #include <eloquent_tinyml/tensorflow.h>
 #include <DHT.h>
-#include "sensor_model.h"
+#include "sensor_model2.h"
 
 #define NUMBER_OF_INPUTS 2
 #define NUMBER_OF_OUTPUTS 1
-#define TENSOR_ARENA_SIZE 5000
+#define TENSOR_ARENA_SIZE 10000  // Sesuaikan jika perlu
 
 #define DHTPIN 2
 #define DHTTYPE DHT11
@@ -17,7 +17,7 @@ Eloquent::TinyML::TensorFlow::TensorFlow<NUMBER_OF_INPUTS, NUMBER_OF_OUTPUTS, TE
 void setup() {
   Serial.begin(115200);
   dht.begin();
-  tf.begin(sensor_model);
+  tf.begin(sensor_model2);
 
   Serial.println("Prediksi Hujan ANN");
   delay(3000);
@@ -26,30 +26,26 @@ void setup() {
 void loop() {
   float hum = dht.readHumidity();
   float temp = dht.readTemperature();
-  float input[2] = {hum,temp};
-
   delay(1000);
   if (isnan(temp) || isnan(hum)) {
     Serial.println("Gagal membaca data dari sensor DHT11");
     return;
   }
-  delay(1000);
+
   Serial.print("Suhu: ");
   Serial.print(temp);
   Serial.print(" °C\t");
   Serial.print("Kelembapan: ");
   Serial.print(hum);
   Serial.println(" %");
-
-// tf.scaleInput(hum); // Input ke-0 akan diisi dengan nilai hum
-// tf.scaleInput(temp); // Input ke-1 akan diisi dengan nilai temp
-//
-// // Prediksi output
-// float outputs;
-// tf.predict({0}, {&outputs});
+  float input[2] = {temp, hum};
   float outputs = tf.predict(input);
+//  tf.scaleInput(hum);  // Masukkan nilai kelembapan
+//  tf.scaleInput(temp); // Masukkan nilai suhu
+//
+//  float outputs;
+//  tf.predict({}, {&outputs});  // Prediksi dengan input yang sudah dimasukkan
 
-  // Tampilkan output
   Serial.print("Prediksi hujan: ");
   Serial.println(outputs);
 
